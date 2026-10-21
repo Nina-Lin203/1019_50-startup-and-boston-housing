@@ -199,13 +199,13 @@
         <div class="space-y-2 max-w-2xl">
           <div class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur border border-white/10 text-xs font-medium text-indigo-200">
             <i class="fa-solid fa-database text-indigo-400"></i>
-            <span>50 Startups Dataset (50 筆真實企業支出與獲利數據)</span>
+            <span id="dataset-summary-badge">50 Startups Dataset (50 筆真實企業支出與獲利數據)</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-heading font-black tracking-tight text-white">
             多元線性迴歸互動視覺化
           </h2>
           <p class="text-sm text-slate-300 leading-relaxed">
-            透過調節特徵權重 <span class="font-mono text-indigo-300">w₁, w₂, w₃</span> 與截距 <span class="font-mono text-purple-300">b</span>，實時觀察模型在 50 家新創公司上的擬合曲線、預測散佈與四大評估指標（MSE / RMSE / MAE / R²）。點擊「一鍵最佳解」即可自動執行高斯-約當矩陣正規方程式解析求得全局最佳解！
+            調整各數值特徵權重與截距，實時觀察目前資料集的預測散佈與四大評估指標（MSE / RMSE / MAE / R²）。點擊「一鍵最佳解」即可求得目前資料的最佳線性模型。
           </p>
         </div>
 
@@ -216,21 +216,110 @@
             <span id="formula-status-tag" class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">已就緒</span>
           </div>
 
-          <div class="font-mono text-xs sm:text-sm leading-relaxed tracking-tight bg-slate-950/60 p-3 rounded-lg border border-white/5 overflow-x-auto text-slate-100">
-            <span class="text-pink-400 font-semibold">利潤 Ŷ</span> = 
-            <span class="text-indigo-400 font-bold" id="eq-w-rd">0.8057</span> <span class="text-slate-400">× 研發</span> 
-            <span id="eq-w-admin-sign" class="text-amber-400">-</span> <span class="text-amber-400 font-bold" id="eq-w-admin">0.0268</span> <span class="text-slate-400">× 管理</span> 
-            <span id="eq-w-mkt-sign" class="text-emerald-400">+</span> <span class="text-emerald-400 font-bold" id="eq-w-mkt">0.0272</span> <span class="text-slate-400">× 行銷</span> 
-            <span id="eq-b-sign" class="text-purple-400">+</span> <span class="text-purple-400 font-bold" id="eq-b">50,122.19</span>
-          </div>
+          <div id="equation-content" class="font-mono text-xs sm:text-sm leading-relaxed tracking-tight bg-slate-950/60 p-3 rounded-lg border border-white/5 overflow-x-auto text-slate-100"></div>
 
           <div class="mt-3 flex items-center justify-between text-[11px] text-slate-300">
             <span>最佳解參考：</span>
-            <span class="font-mono text-indigo-300">R² = 0.9507 | RMSE = $8,855</span>
+            <span id="optimal-reference" class="font-mono text-indigo-300">R² = 0.9507 | RMSE = $8,855</span>
           </div>
         </div>
       </div>
     </div>
+
+    <section class="bg-white rounded-2xl p-5 border border-slate-200 card-shadow space-y-3" aria-labelledby="dataset-input-heading">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+          <h2 id="dataset-input-heading" class="text-sm font-heading font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-file-csv text-emerald-600"></i> 自訂 Dataset 輸入
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">第一列為欄名，最後一欄為目標值；數值欄作為特徵，類別欄不納入迴歸。</p>
+          </div>
+          <label for="dataset-selector" class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+            <span>切換資料集</span>
+            <select id="dataset-selector" class="max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="startups">50 Startups (新創公司利潤預測)</option>
+              <option value="real-estate">Real Estate Price Prediction (房地產價格預測)</option>
+            </select>
+          </label>
+        </div>
+        <button id="btn-load-dataset" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition">
+          <i class="fa-solid fa-arrows-rotate"></i> 載入 / 更新資料集（Update Dataset）
+        </button>
+      </div>
+      <textarea id="dataset-csv-input" rows="5" spellcheck="false" class="w-full resize-y rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-xs leading-relaxed text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" aria-label="CSV 資料內容">R&amp;D Spend,Administration,Marketing Spend,State,Profit&#10;165349.2,136897.8,471784.1,New York,192261.83&#10;162597.7,151377.59,443898.53,California,191792.06</textarea>
+      <p class="text-[10px] text-slate-400">房地產樣本來源：<a href="https://www.kaggle.com/datasets/quantbruce/real-estate-price-prediction" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">Kaggle · quantbruce/real-estate-price-prediction</a></p>
+      <p id="dataset-status" class="text-xs text-slate-500" role="status">目前使用內建資料集（50 筆）。</p>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-5" aria-labelledby="feature-selection-title">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-indigo-600">Feature Selection Lab</p>
+          <h2 id="feature-selection-title" class="mt-1 text-lg font-heading font-bold text-slate-900">特徵選擇與模型比較</h2>
+        </div>
+        <p class="text-xs text-slate-500">以交叉驗證 RMSE 評估特徵子集，選擇後立即重訓模型。</p>
+      </div>
+
+      <div>
+        <div class="mb-3 flex items-center gap-2">
+          <span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">1</span>
+          <h3 class="text-xs font-bold uppercase tracking-wide text-slate-800">Select Feature Selection Algorithm</h3>
+        </div>
+        <div id="feature-algorithm-cards" class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3"></div>
+        <div class="mt-2 flex justify-end">
+          <button id="btn-compare-feature-methods" class="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-bold text-violet-800 transition hover:border-violet-400 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-400">
+            <i class="fa-solid fa-scale-balanced"></i> Compare All 5 Methods
+            <span class="rounded-full bg-violet-200 px-2 py-0.5 text-[9px] uppercase tracking-wide">Compare</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-100 pt-4">
+        <div class="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-center gap-2">
+            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">2</span>
+            <h3 class="text-xs font-bold uppercase tracking-wide text-slate-800">Number of Features (k = 1 to N)</h3>
+          </div>
+          <span id="feature-selection-summary" class="text-[11px] font-medium text-slate-500" aria-live="polite"></span>
+        </div>
+        <div id="feature-count-buttons" class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"></div>
+      </div>
+
+      <div id="feature-method-comparison" class="hidden border-t border-slate-100 pt-4">
+        <h3 class="mb-3 text-xs font-bold uppercase tracking-wide text-slate-800">五種方法交叉驗證比較</h3>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-xs">
+            <thead class="bg-slate-50 text-left text-slate-600"><tr><th class="px-3 py-2">方法</th><th class="px-3 py-2">Ranking</th><th class="px-3 py-2">最佳 k</th><th class="px-3 py-2">最佳特徵子集</th><th class="px-3 py-2 text-right">CV RMSE</th><th class="px-3 py-2 text-right">CV R²</th></tr></thead>
+            <tbody id="feature-method-comparison-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 gap-4 lg:grid-cols-2" aria-label="特徵數量效能分析">
+      <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-heading font-bold text-slate-900">RMSE by Number of Features</h2>
+            <p id="feature-rmse-subtitle" class="mt-1 text-[11px] leading-relaxed text-slate-500">Lower is better. Highlight marks the lowest cross-validation RMSE.</p>
+          </div>
+          <span id="feature-rmse-method-label" class="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-700">Lasso</span>
+        </div>
+        <div class="relative h-56 sm:h-64"><canvas id="feature-rmse-chart" aria-label="RMSE by number of features"></canvas></div>
+      </article>
+
+      <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-heading font-bold text-slate-900">R-squared by Number of Features</h2>
+            <p id="feature-r2-subtitle" class="mt-1 text-[11px] leading-relaxed text-slate-500">Higher is better. Highlight marks the highest cross-validation R².</p>
+          </div>
+          <span id="feature-r2-peak-label" class="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700">Peak at k=2</span>
+        </div>
+        <div class="relative h-56 sm:h-64"><canvas id="feature-r2-chart" aria-label="R squared by number of features"></canvas></div>
+      </article>
+    </section>
 
     <!-- MAIN TWO-COLUMN DASHBOARD GRID -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -254,7 +343,7 @@
                 全特徵模型
                 <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
               </span>
-              <span class="text-[10px] text-indigo-600 mt-1">3 特徵 (R&D + Admin + Mkt)</span>
+              <span id="preset-all-label" class="text-[10px] text-indigo-600 mt-1">3 特徵 (R&D + Admin + Mkt)</span>
             </button>
 
             <button id="preset-2feat" class="preset-btn py-2 px-2.5 rounded-lg border text-left font-medium transition flex flex-col justify-between border-slate-200 bg-white text-slate-700 hover:border-slate-300">
@@ -262,7 +351,7 @@
                 精簡高效組合
                 <span class="w-2 h-2 rounded-full bg-slate-300"></span>
               </span>
-              <span class="text-[10px] text-slate-500 mt-1">2 特徵 (R&D + Marketing)</span>
+              <span id="preset-two-label" class="text-[10px] text-slate-500 mt-1">2 特徵 (R&D + Marketing)</span>
             </button>
 
             <button id="preset-rd-only" class="preset-btn py-2 px-2.5 rounded-lg border text-left font-medium transition flex flex-col justify-between border-slate-200 bg-white text-slate-700 hover:border-slate-300">
@@ -270,7 +359,7 @@
                 單特徵基準
                 <span class="w-2 h-2 rounded-full bg-slate-300"></span>
               </span>
-              <span class="text-[10px] text-slate-500 mt-1">單變量 (僅研發支出)</span>
+              <span id="preset-one-label" class="text-[10px] text-slate-500 mt-1">單變量 (僅研發支出)</span>
             </button>
 
             <button id="preset-zero" class="preset-btn py-2 px-2.5 rounded-lg border text-left font-medium transition flex flex-col justify-between border-slate-200 bg-white text-slate-700 hover:border-slate-300">
@@ -298,105 +387,7 @@
             </button>
           </div>
 
-          <!-- 1. w1: R&D Spend -->
-          <div class="space-y-1.5 p-3 rounded-xl bg-slate-50/80 border border-slate-200/80" style="--thumb-border: #4f46e5;">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-                <label for="slider-w-rd" class="text-xs font-bold text-slate-800">研發支出權重 (w₁)</label>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10px] text-slate-400 font-mono">OLS最佳: 0.8057</span>
-                <button class="snap-btn text-[10px] text-indigo-600 hover:underline font-medium" data-target="w_rd" title="將此參數單獨對齊至最佳解">對齊</button>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <input type="range" id="slider-w-rd" min="-0.5" max="2.0" step="0.001" value="0.8057" class="flex-grow">
-              <input type="number" id="input-w-rd" step="0.001" value="0.8057" class="w-20 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-1 focus:ring-indigo-500">
-            </div>
-
-            <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
-              <span>-0.50</span>
-              <span class="text-indigo-600 font-semibold">R&D Spend (最強正向驅動力)</span>
-              <span>+2.00</span>
-            </div>
-          </div>
-
-          <!-- 2. w2: Administration -->
-          <div class="space-y-1.5 p-3 rounded-xl bg-slate-50/80 border border-slate-200/80" style="--thumb-border: #f59e0b;">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                <label for="slider-w-admin" class="text-xs font-bold text-slate-800">管理支出權重 (w₂)</label>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10px] text-slate-400 font-mono">OLS最佳: -0.0268</span>
-                <button class="snap-btn text-[10px] text-amber-600 hover:underline font-medium" data-target="w_admin" title="將此參數單獨對齊至最佳解">對齊</button>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <input type="range" id="slider-w-admin" min="-0.5" max="0.5" step="0.001" value="-0.0268" class="flex-grow">
-              <input type="number" id="input-w-admin" step="0.001" value="-0.0268" class="w-20 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-1 focus:ring-amber-500">
-            </div>
-
-            <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
-              <span>-0.50</span>
-              <span class="text-amber-600 font-semibold">Administration (接近 0，統計不顯著)</span>
-              <span>+0.50</span>
-            </div>
-          </div>
-
-          <!-- 3. w3: Marketing Spend -->
-          <div class="space-y-1.5 p-3 rounded-xl bg-slate-50/80 border border-slate-200/80" style="--thumb-border: #10b981;">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <label for="slider-w-mkt" class="text-xs font-bold text-slate-800">行銷支出權重 (w₃)</label>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10px] text-slate-400 font-mono">OLS最佳: 0.0272</span>
-                <button class="snap-btn text-[10px] text-emerald-600 hover:underline font-medium" data-target="w_mkt" title="將此參數單獨對齊至最佳解">對齊</button>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <input type="range" id="slider-w-mkt" min="-0.2" max="0.5" step="0.001" value="0.0272" class="flex-grow">
-              <input type="number" id="input-w-mkt" step="0.001" value="0.0272" class="w-20 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-1 focus:ring-emerald-500">
-            </div>
-
-            <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
-              <span>-0.20</span>
-              <span class="text-emerald-600 font-semibold">Marketing Spend (微幅正向驅動)</span>
-              <span>+0.50</span>
-            </div>
-          </div>
-
-          <!-- 4. b: Intercept -->
-          <div class="space-y-1.5 p-3 rounded-xl bg-slate-50/80 border border-slate-200/80" style="--thumb-border: #8b5cf6;">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-                <label for="slider-b" class="text-xs font-bold text-slate-800">基準截距常數 (b / 截距項)</label>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10px] text-slate-400 font-mono">OLS最佳: 50,122</span>
-                <button class="snap-btn text-[10px] text-purple-600 hover:underline font-medium" data-target="b" title="將此參數單獨對齊至最佳解">對齊</button>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <input type="range" id="slider-b" min="-50000" max="150000" step="100" value="50122.19" class="flex-grow">
-              <input type="number" id="input-b" step="100" value="50122.19" class="w-24 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-1 focus:ring-purple-500">
-            </div>
-
-            <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
-              <span>-$50k</span>
-              <span class="text-purple-600 font-semibold">基底利潤 ($)</span>
-              <span>+$150k</span>
-            </div>
-          </div>
+          <div id="parameter-controls" class="space-y-3"></div>
 
           <!-- Bottom Action Buttons in Card -->
           <div class="pt-2 flex gap-2">
@@ -417,49 +408,25 @@
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-heading font-bold text-slate-900 flex items-center gap-2">
               <i class="fa-solid fa-calculator text-indigo-600"></i>
-              新創利潤即時試算機
+              <span id="simulator-heading">新創利潤即時試算機</span>
             </h3>
             <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full">Simulator</span>
           </div>
-          <p class="text-xs text-slate-500 mb-4">輸入自訂支出金額，即刻使用當前模型公式推估獲利：</p>
+          <p id="simulator-description" class="text-xs text-slate-500 mb-4">輸入特徵值，即刻使用當前模型公式推估目標值：</p>
 
-          <div class="space-y-2.5 text-xs">
-            <div>
-              <div class="flex justify-between text-slate-600 mb-1">
-                <span>研發支出 (R&D Spend):</span>
-                <span class="font-mono font-semibold" id="sim-rd-val">$100,000</span>
-              </div>
-              <input type="range" id="sim-rd" min="0" max="200000" step="5000" value="100000" class="w-full">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-600 mb-1">
-                <span>管理支出 (Administration):</span>
-                <span class="font-mono font-semibold" id="sim-admin-val">$120,000</span>
-              </div>
-              <input type="range" id="sim-admin" min="0" max="200000" step="5000" value="120000" class="w-full">
-            </div>
-
-            <div>
-              <div class="flex justify-between text-slate-600 mb-1">
-                <span>行銷支出 (Marketing Spend):</span>
-                <span class="font-mono font-semibold" id="sim-mkt-val">$250,000</span>
-              </div>
-              <input type="range" id="sim-mkt" min="0" max="500000" step="10000" value="250000" class="w-full">
-            </div>
-          </div>
+          <div id="simulator-controls" class="space-y-2.5 text-xs"></div>
 
           <!-- Calculated Result Box -->
           <div class="mt-4 p-3.5 rounded-xl bg-white border border-indigo-200 shadow-sm flex items-center justify-between">
             <div>
-              <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">預估企業利潤 (Predicted Profit)</div>
+              <div id="sim-result-label" class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">預估企業利潤 (Predicted Profit)</div>
               <div class="text-xl sm:text-2xl font-heading font-extrabold text-indigo-700 tracking-tight" id="sim-result-profit">$134,269</div>
             </div>
             <div class="text-right">
               <span id="sim-vs-avg-badge" class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <i class="fa-solid fa-arrow-trend-up"></i> 高於平均
               </span>
-              <div class="text-[10px] text-slate-400 mt-0.5">母體均值: $112,013</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">資料平均: <span id="sim-target-mean"></span></div>
             </div>
           </div>
         </div>
@@ -567,9 +534,6 @@
               <!-- Feature selector (for Tab 2) -->
               <div id="feature-select-wrapper" class="hidden">
                 <select id="select-feature-projection" class="bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  <option value="rd">X軸: 研發支出 (R&D Spend)</option>
-                  <option value="mkt">X軸: 行銷支出 (Marketing Spend)</option>
-                  <option value="admin">X軸: 管理支出 (Administration)</option>
                 </select>
               </div>
 
@@ -577,10 +541,7 @@
               <div class="flex items-center gap-1.5 text-xs">
                 <i class="fa-solid fa-filter text-slate-400"></i>
                 <select id="select-state-filter" class="bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  <option value="All">全區 (50 家公司)</option>
-                  <option value="New York">New York</option>
-                  <option value="California">California</option>
-                  <option value="Florida">Florida</option>
+                  <option value="All">全部樣本</option>
                 </select>
               </div>
             </div>
@@ -613,9 +574,9 @@
             <div>
               <h3 class="text-sm font-heading font-bold text-slate-900 flex items-center gap-2">
                 <i class="fa-solid fa-table-list text-indigo-600"></i>
-                50 Startups 樣本殘差明細表
+                <span id="table-heading">50 Startups 樣本殘差明細表</span>
               </h3>
-              <p class="text-xs text-slate-500">即時檢視各新創公司利潤之預測值與偏差幅度</p>
+              <p id="table-description" class="text-xs text-slate-500">即時檢視每筆樣本目標值之預測與偏差幅度</p>
             </div>
 
             <!-- Search, Sort & Export -->
@@ -627,7 +588,7 @@
 
               <select id="table-sort" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-medium text-slate-700 focus:outline-none">
                 <option value="id">序號 (#1-50)</option>
-                <option value="actual-desc">利潤由高到低</option>
+                <option value="actual-desc">目標值由高到低</option>
                 <option value="error-desc">絕對誤差由大到小</option>
                 <option value="rd-desc">研發支出最高</option>
               </select>
@@ -642,17 +603,7 @@
           <div class="overflow-x-auto max-h-72 rounded-xl border border-slate-100">
             <table class="min-w-full divide-y divide-slate-200 text-xs">
               <thead class="bg-slate-50 sticky top-0 z-10 font-bold text-slate-600 text-left">
-                <tr>
-                  <th class="py-2.5 px-3">#</th>
-                  <th class="py-2.5 px-3">地區 (State)</th>
-                  <th class="py-2.5 px-3">研發支出 (R&D)</th>
-                  <th class="py-2.5 px-3">管理支出 (Admin)</th>
-                  <th class="py-2.5 px-3">行銷支出 (Mkt)</th>
-                  <th class="py-2.5 px-3 text-right">實際利潤 (Y)</th>
-                  <th class="py-2.5 px-3 text-right">預測利潤 (Ŷ)</th>
-                  <th class="py-2.5 px-3 text-right">殘差 (e)</th>
-                  <th class="py-2.5 px-3 text-center">誤差率</th>
-                </tr>
+                <tr id="table-header-row"></tr>
               </thead>
               <tbody id="table-body" class="divide-y divide-slate-100 bg-white font-mono">
                 <!-- Dynamically populated via JS -->
@@ -795,7 +746,7 @@
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script>
     // 1. EMBEDDED REAL 50 STARTUPS DATASET
-    const STARTUPS_DATA = [
+    let STARTUPS_DATA = [
   {
     "R&D Spend": 165349.2,
     "Administration": 136897.8,
@@ -1148,109 +1099,299 @@
   }
 ];
 
-    // Precalculate Dataset summary statistics
-    const N_SAMPLES = STARTUPS_DATA.length;
-    const Y_ACTUAL = STARTUPS_DATA.map(d => d.Profit);
-    const Y_MEAN = Y_ACTUAL.reduce((a, b) => a + b, 0) / N_SAMPLES;
-    const SS_TOT = Y_ACTUAL.reduce((sum, y) => sum + Math.pow(y - Y_MEAN, 2), 0);
+    const DATASET_PRESETS = {
+      startups: '50_Startups.csv',
+      'real-estate': 'Real estate.csv'
+    };
 
-    // 2. MATHEMATICAL OLS SOLVER (GAUSS-JORDAN ELIMINATION)
-    function solveOLS(activeFeatureKeys) {
-      // activeFeatureKeys: array of keys e.g. ['rd', 'admin', 'mkt']
-      const keyMap = {
-        'rd': 'R&D Spend',
-        'admin': 'Administration',
-        'mkt': 'Marketing Spend'
-      };
+    let TARGET_KEY = 'Profit';
+    let FEATURE_KEYS = [];
+    let CATEGORY_KEYS = [];
+    let DATASET_STATS = null;
+    let GLOBAL_OPTIMAL = null;
 
-      const selectedKeys = activeFeatureKeys.filter(k => keyMap[k]);
-      const p = selectedKeys.length + 1; // features + intercept
-      
-      // If no feature selected, predict mean
-      if (selectedKeys.length === 0) {
-        return {
-          b: Y_MEAN,
-          w_rd: 0,
-          w_admin: 0,
-          w_mkt: 0
-        };
-      }
-
-      // Build design matrix X with bias column of 1s
-      // X: N x p
-      const X = STARTUPS_DATA.map(row => [1, ...selectedKeys.map(k => row[keyMap[k]])]);
-
-      // Compute XtX (p x p) and Xty (p x 1)
-      const XtX = Array.from({ length: p }, () => new Array(p).fill(0));
-      const Xty = new Array(p).fill(0);
-
-      for (let i = 0; i < N_SAMPLES; i++) {
-        const yi = Y_ACTUAL[i];
-        for (let r = 0; r < p; r++) {
-          Xty[r] += X[i][r] * yi;
-          for (let c = 0; c < p; c++) {
-            XtX[r][c] += X[i][r] * X[i][c];
-          }
-        }
-      }
-
-      // Gauss-Jordan elimination on [XtX | I]
-      const M = XtX.map((row, r) => [...row, ...Array.from({ length: p }, (_, c) => (r === c ? 1 : 0))]);
-      for (let i = 0; i < p; i++) {
-        let maxRow = i;
-        for (let r = i + 1; r < p; r++) {
-          if (Math.abs(M[r][i]) > Math.abs(M[maxRow][i])) maxRow = r;
-        }
-        [M[i], M[maxRow]] = [M[maxRow], M[i]];
-        const pivot = M[i][i];
-        if (Math.abs(pivot) < 1e-12) return null; // singular
-        for (let c = 0; c < 2 * p; c++) M[i][c] /= pivot;
-        for (let r = 0; r < p; r++) {
-          if (r !== i) {
-            const factor = M[r][i];
-            for (let c = 0; c < 2 * p; c++) M[r][c] -= factor * M[i][c];
-          }
-        }
-      }
-
-      const inv = M.map(row => row.slice(p));
-      const beta = new Array(p).fill(0);
-      for (let r = 0; r < p; r++) {
-        for (let c = 0; c < p; c++) {
-          beta[r] += inv[r][c] * Xty[c];
-        }
-      }
-
-      const result = {
-        b: beta[0],
-        w_rd: 0,
-        w_admin: 0,
-        w_mkt: 0
-      };
-
-      selectedKeys.forEach((k, idx) => {
-        result['w_' + k] = beta[idx + 1];
-      });
-
-      return result;
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     }
 
-    // Compute Global 3-feature Optimal
-    const GLOBAL_OPTIMAL = solveOLS(['rd', 'admin', 'mkt']);
+    function isNumericValue(value) {
+      return value !== '' && value !== null && Number.isFinite(Number(value));
+    }
 
-    // 3. APPLICATION STATE
+    function refreshDatasetMetadata() {
+      const columns = Object.keys(STARTUPS_DATA[0] || {});
+      FEATURE_KEYS = columns.filter(key => key !== TARGET_KEY && STARTUPS_DATA.every(row => isNumericValue(row[key])));
+      CATEGORY_KEYS = columns.filter(key => key !== TARGET_KEY && !FEATURE_KEYS.includes(key));
+      const targetValues = STARTUPS_DATA.map(row => Number(row[TARGET_KEY]));
+      const mean = targetValues.reduce((sum, value) => sum + value, 0) / targetValues.length;
+      DATASET_STATS = {
+        count: STARTUPS_DATA.length,
+        targetValues,
+        mean,
+        totalSquares: targetValues.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0),
+        minTarget: Math.min(...targetValues),
+        maxTarget: Math.max(...targetValues)
+      };
+    }
+
+    function solveLinearSystem(matrix, vector) {
+      const size = vector.length;
+      const augmented = matrix.map((row, index) => [...row, vector[index]]);
+      for (let column = 0; column < size; column++) {
+        let pivotRow = column;
+        for (let row = column + 1; row < size; row++) {
+          if (Math.abs(augmented[row][column]) > Math.abs(augmented[pivotRow][column])) pivotRow = row;
+        }
+        [augmented[column], augmented[pivotRow]] = [augmented[pivotRow], augmented[column]];
+        const pivot = augmented[column][column];
+        if (Math.abs(pivot) < 1e-12) return null;
+        for (let cell = column; cell <= size; cell++) augmented[column][cell] /= pivot;
+        for (let row = 0; row < size; row++) {
+          if (row === column) continue;
+          const factor = augmented[row][column];
+          for (let cell = column; cell <= size; cell++) augmented[row][cell] -= factor * augmented[column][cell];
+        }
+      }
+      return augmented.map(row => row[size]);
+    }
+
+    function fitOLS(rows, featureIndices) {
+      const selectedKeys = featureIndices.map(index => FEATURE_KEYS[index]).filter(Boolean);
+      const targetValues = rows.map(row => Number(row[TARGET_KEY]));
+      const targetMean = targetValues.reduce((sum, value) => sum + value, 0) / targetValues.length;
+      if (selectedKeys.length === 0) return { weights: FEATURE_KEYS.map(() => 0), b: targetMean };
+
+      const means = selectedKeys.map(key => rows.reduce((sum, row) => sum + Number(row[key]), 0) / rows.length);
+      const scales = selectedKeys.map((key, index) => {
+        const variance = rows.reduce((sum, row) => sum + Math.pow(Number(row[key]) - means[index], 2), 0) / rows.length;
+        return Math.sqrt(variance) || 1;
+      });
+      const design = rows.map(row => [1, ...selectedKeys.map((key, index) => (Number(row[key]) - means[index]) / scales[index])]);
+      const size = selectedKeys.length + 1;
+      const gram = Array.from({ length: size }, () => new Array(size).fill(0));
+      const product = new Array(size).fill(0);
+      design.forEach((values, rowIndex) => {
+        for (let row = 0; row < size; row++) {
+          product[row] += values[row] * targetValues[rowIndex];
+          for (let column = 0; column < size; column++) gram[row][column] += values[row] * values[column];
+        }
+      });
+
+      let beta = solveLinearSystem(gram, product);
+      if (!beta) {
+        const ridge = gram.map(row => [...row]);
+        const penalty = Math.max(1, rows.length) * 1e-8;
+        for (let index = 1; index < size; index++) ridge[index][index] += penalty;
+        beta = solveLinearSystem(ridge, product);
+      }
+      if (!beta) return null;
+
+      const weights = FEATURE_KEYS.map(() => 0);
+      let intercept = beta[0];
+      selectedKeys.forEach((key, index) => {
+        const weight = beta[index + 1] / scales[index];
+        weights[FEATURE_KEYS.indexOf(key)] = weight;
+        intercept -= weight * means[index];
+      });
+      return { weights, b: intercept };
+    }
+
+    function solveOLS(featureIndices = FEATURE_KEYS.map((_, index) => index)) {
+      return fitOLS(STARTUPS_DATA, featureIndices);
+    }
+
+    refreshDatasetMetadata();
+    GLOBAL_OPTIMAL = solveOLS();
+
     const state = {
-      w_rd: GLOBAL_OPTIMAL.w_rd,
-      w_admin: GLOBAL_OPTIMAL.w_admin,
-      w_mkt: GLOBAL_OPTIMAL.w_mkt,
+      weights: [...GLOBAL_OPTIMAL.weights],
       b: GLOBAL_OPTIMAL.b,
       activePreset: 'all',
       chartTab: 'actual-vs-pred',
       stateFilter: 'All',
-      projectionFeature: 'rd',
+      projectionFeature: 0,
       tableSort: 'id',
-      tableSearch: ''
+      tableSearch: '',
+      featureAlgorithm: 'lasso',
+      featureCount: FEATURE_KEYS.length,
+      selectedFeatureIndices: FEATURE_KEYS.map((_, index) => index),
+      featureSelectionResults: null,
+      featureScoreCache: new Map()
     };
+
+    const FEATURE_METHODS = [
+      { id: 'lasso', title: 'Lasso (L1 Ranking)', tag: 'Matches Benchmark' },
+      { id: 'sfs', title: 'Forward SFS', tag: 'Greedy' },
+      { id: 'rfe', title: 'RFE', tag: 'Backward' },
+      { id: 'elastic', title: 'ElasticNet', tag: 'L1 + L2' },
+      { id: 'exhaustive', title: 'Exhaustive Search', tag: 'Best Subset' }
+    ];
+
+    function scoreFeatureSetCV(featureIndices) {
+      const cacheKey = [...featureIndices].sort((a, b) => a - b).join(',');
+      if (state.featureScoreCache.has(cacheKey)) return state.featureScoreCache.get(cacheKey);
+      const foldCount = Math.min(5, STARTUPS_DATA.length);
+      const actual = [];
+      const predicted = [];
+      if (foldCount < 2) return { rmse: 0, mae: 0, mse: 0, r2: 1 };
+
+      for (let fold = 0; fold < foldCount; fold++) {
+        const trainingRows = STARTUPS_DATA.filter((_, index) => index % foldCount !== fold);
+        const validationRows = STARTUPS_DATA.filter((_, index) => index % foldCount === fold);
+        const model = fitOLS(trainingRows, featureIndices);
+        validationRows.forEach(row => {
+          actual.push(Number(row[TARGET_KEY]));
+          predicted.push(FEATURE_KEYS.reduce((sum, key, index) => sum + model.weights[index] * Number(row[key]), model.b));
+        });
+      }
+
+      const errors = actual.map((value, index) => value - predicted[index]);
+      const mse = errors.reduce((sum, error) => sum + error * error, 0) / errors.length;
+      const mae = errors.reduce((sum, error) => sum + Math.abs(error), 0) / errors.length;
+      const mean = actual.reduce((sum, value) => sum + value, 0) / actual.length;
+      const totalSquares = actual.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0);
+      const residualSquares = errors.reduce((sum, error) => sum + error * error, 0);
+      const score = { mse, rmse: Math.sqrt(mse), mae, r2: totalSquares ? 1 - residualSquares / totalSquares : (residualSquares === 0 ? 1 : 0) };
+      state.featureScoreCache.set(cacheKey, score);
+      return score;
+    }
+
+    function getPenalizedRanking(l1Ratio) {
+      const count = DATASET_STATS.count;
+      const targetMean = DATASET_STATS.mean;
+      const targetScale = Math.sqrt(DATASET_STATS.totalSquares / count) || 1;
+      const y = DATASET_STATS.targetValues.map(value => (value - targetMean) / targetScale);
+      const means = FEATURE_KEYS.map(key => STARTUPS_DATA.reduce((sum, row) => sum + Number(row[key]), 0) / count);
+      const scales = FEATURE_KEYS.map((key, index) => Math.sqrt(STARTUPS_DATA.reduce((sum, row) => sum + Math.pow(Number(row[key]) - means[index], 2), 0) / count) || 1);
+      const x = STARTUPS_DATA.map(row => FEATURE_KEYS.map((key, index) => (Number(row[key]) - means[index]) / scales[index]));
+      const coefficients = FEATURE_KEYS.map(() => 0);
+      const alpha = 0.04;
+
+      for (let iteration = 0; iteration < 250; iteration++) {
+        let largestChange = 0;
+        for (let feature = 0; feature < FEATURE_KEYS.length; feature++) {
+          let correlation = 0;
+          let norm = 0;
+          for (let row = 0; row < count; row++) {
+            const residualWithoutFeature = y[row] - x[row].reduce((sum, value, index) => index === feature ? sum : sum + value * coefficients[index], 0);
+            correlation += x[row][feature] * residualWithoutFeature / count;
+            norm += x[row][feature] * x[row][feature] / count;
+          }
+          const threshold = alpha * l1Ratio;
+          const updated = Math.sign(correlation) * Math.max(Math.abs(correlation) - threshold, 0) / (norm + alpha * (1 - l1Ratio));
+          largestChange = Math.max(largestChange, Math.abs(updated - coefficients[feature]));
+          coefficients[feature] = updated;
+        }
+        if (largestChange < 1e-7) break;
+      }
+
+      let importance = coefficients.map(Math.abs);
+      if (importance.every(value => value < 1e-8)) {
+        importance = FEATURE_KEYS.map((key, feature) => Math.abs(x.reduce((sum, row, index) => sum + row[feature] * y[index], 0) / count));
+      }
+      return FEATURE_KEYS.map((_, index) => index).sort((a, b) => importance[b] - importance[a]);
+    }
+
+    function getForwardRanking() {
+      const ranking = [];
+      const remaining = FEATURE_KEYS.map((_, index) => index);
+      while (remaining.length) {
+        let bestFeature = remaining[0];
+        let bestScore = Infinity;
+        remaining.forEach(candidate => {
+          const score = scoreFeatureSetCV([...ranking, candidate]).rmse;
+          if (score < bestScore) {
+            bestScore = score;
+            bestFeature = candidate;
+          }
+        });
+        ranking.push(bestFeature);
+        remaining.splice(remaining.indexOf(bestFeature), 1);
+      }
+      return ranking;
+    }
+
+    function getRFERanking() {
+      const remaining = FEATURE_KEYS.map((_, index) => index);
+      const removed = [];
+      while (remaining.length > 1) {
+        const model = fitOLS(STARTUPS_DATA, remaining);
+        const scales = remaining.map(index => {
+          const key = FEATURE_KEYS[index];
+          const mean = STARTUPS_DATA.reduce((sum, row) => sum + Number(row[key]), 0) / DATASET_STATS.count;
+          return Math.sqrt(STARTUPS_DATA.reduce((sum, row) => sum + Math.pow(Number(row[key]) - mean, 2), 0) / DATASET_STATS.count) || 1;
+        });
+        const leastImportant = remaining.reduce((least, index, position) => Math.abs(model.weights[index] * scales[position]) < Math.abs(model.weights[least] * scales[remaining.indexOf(least)]) ? index : least, remaining[0]);
+        removed.push(leastImportant);
+        remaining.splice(remaining.indexOf(leastImportant), 1);
+      }
+      return [...remaining, ...removed.reverse()];
+    }
+
+    function getCombinations(values, size, start = 0, prefix = [], output = []) {
+      if (prefix.length === size) {
+        output.push([...prefix]);
+        return output;
+      }
+      for (let index = start; index <= values.length - (size - prefix.length); index++) {
+        prefix.push(values[index]);
+        getCombinations(values, size, index + 1, prefix, output);
+        prefix.pop();
+      }
+      return output;
+    }
+
+    function analyzeFeatureMethods() {
+      state.featureScoreCache = new Map();
+      const featureIndices = FEATURE_KEYS.map((_, index) => index);
+      const exhaustiveAllowed = FEATURE_KEYS.length <= 8;
+      const lassoRanking = getPenalizedRanking(1);
+      const elasticRanking = getPenalizedRanking(0.5);
+      const rankings = {
+        lasso: lassoRanking,
+        sfs: getForwardRanking(),
+        rfe: getRFERanking(),
+        elastic: elasticRanking,
+        exhaustive: featureIndices
+      };
+      const results = {};
+
+      FEATURE_METHODS.forEach(method => {
+        if (method.id === 'exhaustive' && !exhaustiveAllowed) return;
+        let ranking = rankings[method.id];
+        const bestByK = [];
+        const exhaustiveSubsets = [];
+        for (let k = 1; k <= FEATURE_KEYS.length; k++) {
+          if (method.id === 'exhaustive') {
+            let bestSubset = getCombinations(featureIndices, k)[0] || [];
+            let bestScore = scoreFeatureSetCV(bestSubset);
+            getCombinations(featureIndices, k).slice(1).forEach(subset => {
+              const score = scoreFeatureSetCV(subset);
+              if (score.rmse < bestScore.rmse) {
+                bestSubset = subset;
+                bestScore = score;
+              }
+            });
+            exhaustiveSubsets.push(bestSubset);
+            bestByK.push({ k, indices: bestSubset, score: bestScore });
+          } else {
+            const indices = ranking.slice(0, k);
+            bestByK.push({ k, indices, score: scoreFeatureSetCV(indices) });
+          }
+        }
+        if (method.id === 'exhaustive') {
+          const appearances = FEATURE_KEYS.map((_, index) => exhaustiveSubsets.reduce((sum, subset) => sum + Number(subset.includes(index)), 0));
+          ranking = featureIndices.sort((a, b) => appearances[b] - appearances[a]);
+        }
+        let best = bestByK[0];
+        bestByK.slice(1).forEach(candidate => {
+          if (candidate.score.rmse < best.score.rmse - 1e-9 || (Math.abs(candidate.score.rmse - best.score.rmse) < 1e-9 && candidate.k < best.k)) best = candidate;
+        });
+        results[method.id] = { ranking, bestByK, bestK: best.k, bestIndices: best.indices, bestScore: best.score, exhaustiveSubsets };
+      });
+      state.featureSelectionResults = results;
+      return results;
+    }
 
     // 4. CHART.JS INITIALIZATION
     let chartInstance = null;
@@ -1315,11 +1456,11 @@
                   const residual = raw.y - raw.x;
                   const pct = Math.abs(residual / (raw.x || 1) * 100).toFixed(1);
                   return [
-                    `企業 #${raw.meta + 1} (${item.State})`,
-                    `實際利潤: $${Math.round(raw.x).toLocaleString()}`,
-                    `預測利潤: $${Math.round(raw.y).toLocaleString()}`,
-                    `預測殘差: ${residual >= 0 ? '+' : ''}${Math.round(residual).toLocaleString()} (誤差 ${pct}%)`,
-                    `研發: $${Math.round(item['R&D Spend']).toLocaleString()} | 行銷: $${Math.round(item['Marketing Spend']).toLocaleString()}`
+                    `樣本 #${raw.meta + 1}`,
+                    `${TARGET_KEY}: ${Number(raw.x).toLocaleString()}`,
+                    `預測值: ${Number(raw.y).toLocaleString()}`,
+                    `殘差: ${residual >= 0 ? '+' : ''}${Math.round(residual).toLocaleString()} (誤差 ${pct}%)`,
+                    ...FEATURE_KEYS.slice(0, 3).map(key => `${key}: ${Number(item[key]).toLocaleString()}`)
                   ];
                 }
               }
@@ -1353,19 +1494,15 @@
       });
     }
 
-    // 5. METRICS & PREDICTION CALCULATIONS
-    function computePredictions() {
+    function computePredictions(weights = state.weights, intercept = state.b, featureIndices = state.selectedFeatureIndices) {
       const predictions = [];
       let ss_res = 0;
       let sum_abs_err = 0;
 
-      for (let i = 0; i < N_SAMPLES; i++) {
+      for (let i = 0; i < DATASET_STATS.count; i++) {
         const row = STARTUPS_DATA[i];
-        const y_pred = state.w_rd * row['R&D Spend'] +
-                       state.w_admin * row['Administration'] +
-                       state.w_mkt * row['Marketing Spend'] +
-                       state.b;
-        const y_act = row.Profit;
+        const y_pred = featureIndices.reduce((sum, index) => sum + weights[index] * Number(row[FEATURE_KEYS[index]]), intercept);
+        const y_act = Number(row[TARGET_KEY]);
         const res = y_act - y_pred;
         const abs_err = Math.abs(res);
         
@@ -1383,32 +1520,247 @@
         });
       }
 
-      const mse = ss_res / N_SAMPLES;
+      const mse = ss_res / DATASET_STATS.count;
       const rmse = Math.sqrt(mse);
-      const mae = sum_abs_err / N_SAMPLES;
-      const r2 = 1 - (ss_res / SS_TOT);
+      const mae = sum_abs_err / DATASET_STATS.count;
+      const r2 = DATASET_STATS.totalSquares ? 1 - (ss_res / DATASET_STATS.totalSquares) : (ss_res === 0 ? 1 : 0);
 
       return { predictions, mse, rmse, mae, r2 };
+    }
+
+    function renderFeatureSelectionUI() {
+      const results = state.featureSelectionResults || {};
+      const exhaustiveUnavailable = FEATURE_KEYS.length > 8;
+      const cards = document.getElementById('feature-algorithm-cards');
+      cards.innerHTML = FEATURE_METHODS.map(method => {
+        const active = state.featureAlgorithm === method.id;
+        const disabled = method.id === 'exhaustive' && exhaustiveUnavailable;
+        return `<button type="button" role="radio" aria-checked="${active}" data-feature-method="${method.id}" ${disabled ? 'disabled' : ''} class="group flex min-h-20 items-start justify-between gap-3 rounded-xl border p-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${disabled ? 'cursor-not-allowed border-slate-200 bg-slate-50 opacity-50' : active ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100' : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'}">
+          <span class="min-w-0"><span class="block text-xs font-bold ${active ? 'text-indigo-900' : 'text-slate-800'}">${method.title}</span><span class="mt-1 block text-[10px] text-slate-500">${disabled ? '支援最多 8 個特徵' : method.id === 'lasso' ? '依 L1 正則化係數排序' : method.id === 'sfs' ? '逐步挑選 CV 表現最佳特徵' : method.id === 'rfe' ? '逐步移除較低重要性特徵' : method.id === 'elastic' ? '結合 L1/L2 正則化排名' : '逐一評估所有 k 特徵子集'}</span></span>
+          <span class="shrink-0 rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-wide ${active ? 'bg-indigo-200 text-indigo-800' : 'bg-slate-100 text-slate-600'}">${method.tag}</span>
+        </button>`;
+      }).join('');
+
+      const analysis = results[state.featureAlgorithm];
+      const countButtons = document.getElementById('feature-count-buttons');
+      if (!analysis) {
+        countButtons.innerHTML = '<p class="text-xs text-rose-700">目前無法分析此方法。</p>';
+        return;
+      }
+      countButtons.innerHTML = analysis.bestByK.map(entry => {
+        const isOptimal = entry.k === analysis.bestK;
+        const isFull = entry.k === FEATURE_KEYS.length;
+        const isSelected = entry.k === state.featureCount;
+        const names = entry.indices.map(index => FEATURE_KEYS[index]);
+        const classes = isSelected && isOptimal
+          ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100 text-emerald-900'
+          : isSelected
+            ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100 text-indigo-900'
+            : isOptimal
+              ? 'border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-50'
+              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50';
+        const note = isOptimal ? '<span class="text-emerald-700">★ Optimal Sweet Spot · Min CV RMSE</span>' : isFull ? '<span class="text-amber-700">Full Model</span>' : '<span class="text-slate-400">Feature subset</span>';
+        return `<button type="button" aria-pressed="${isSelected}" data-feature-count="${entry.k}" class="min-h-[82px] rounded-xl border px-3 py-2 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${classes}">
+          <span class="flex items-center justify-between gap-2"><span class="text-xs font-extrabold">k = ${entry.k}</span>${isFull ? '<i class="fa-solid fa-triangle-exclamation text-[10px] text-amber-600" title="完整特徵模型"></i>' : ''}</span>
+          <span class="mt-1 block truncate text-[10px] font-medium">${names.map(escapeHTML).join(' · ')}</span>
+          <span class="mt-1 block text-[9px] font-semibold">${note}</span>
+          <span class="mt-0.5 block text-[9px] text-slate-500">CV RMSE ${entry.score.rmse.toFixed(3)}</span>
+        </button>`;
+      }).join('');
+      const chosen = analysis.bestByK.find(entry => entry.k === state.featureCount) || analysis.bestByK[0];
+      document.getElementById('feature-selection-summary').textContent = `${FEATURE_METHODS.find(method => method.id === state.featureAlgorithm).title} · k=${chosen.k} · CV RMSE ${chosen.score.rmse.toFixed(3)} · CV R² ${chosen.score.r2.toFixed(4)}`;
+      renderFeatureMetricCharts(analysis);
+    }
+
+    let featureRmseChart = null;
+    let featureR2Chart = null;
+
+    function renderFeatureMetricCharts(analysis) {
+      const method = FEATURE_METHODS.find(item => item.id === state.featureAlgorithm);
+      const entries = analysis.bestByK;
+      const labels = entries.map(entry => `k=${entry.k}`);
+      const rmseValues = entries.map(entry => entry.score.rmse);
+      const r2Values = entries.map(entry => entry.score.r2);
+      const bestRmseIndex = rmseValues.reduce((best, value, index) => value < rmseValues[best] ? index : best, 0);
+      const peakR2Index = r2Values.reduce((best, value, index) => value > r2Values[best] ? index : best, 0);
+      const createMetricChart = (canvasId, values, bestIndex, color, label, showBestValue = false) => {
+        const chart = new Chart(document.getElementById(canvasId), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label,
+            data: values,
+            borderColor: color,
+            backgroundColor: `${color}20`,
+            borderWidth: 2.5,
+            tension: 0.32,
+            fill: false,
+            pointRadius: values.map((_, index) => index === bestIndex ? 6 : 3.5),
+            pointHoverRadius: 7,
+            pointBackgroundColor: values.map((_, index) => index === bestIndex ? '#16a34a' : color),
+            pointBorderColor: values.map((_, index) => index === bestIndex ? '#dcfce7' : '#ffffff'),
+            pointBorderWidth: values.map((_, index) => index === bestIndex ? 3 : 2)
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 250 },
+          interaction: { intersect: false, mode: 'index' },
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: context => `${label}: ${context.parsed.y.toFixed(4)}` } }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Number of features (k)' }, grid: { display: false } },
+            y: {
+              title: { display: true, text: label },
+              beginAtZero: false,
+              grid: { color: '#e2e8f0' },
+              ticks: { callback: value => Number(value).toFixed(2) }
+            }
+          }
+        },
+        plugins: showBestValue ? [{
+          id: `peak-value-${canvasId}`,
+          afterDatasetsDraw(chart) {
+            const point = chart.getDatasetMeta(0).data[chart.$highlightIndex];
+            if (!point) return;
+            const value = chart.$highlightValue;
+            const context = chart.ctx;
+            context.save();
+            context.font = '600 11px Inter, sans-serif';
+            context.fillStyle = '#15803d';
+            context.textAlign = 'center';
+            context.fillText(value.toFixed(4), point.x, point.y - 13);
+            context.restore();
+          }
+        }] : []
+        });
+        chart.$highlightIndex = bestIndex;
+        chart.$highlightValue = values[bestIndex];
+        return chart;
+      };
+
+      const updateChart = (chart, values, index) => {
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = values;
+        chart.data.datasets[0].pointRadius = values.map((_, pointIndex) => pointIndex === index ? 6 : 3.5);
+        chart.data.datasets[0].pointHoverRadius = 7;
+        chart.data.datasets[0].pointBackgroundColor = values.map((_, pointIndex) => pointIndex === index ? '#16a34a' : chart.data.datasets[0].borderColor);
+        chart.data.datasets[0].pointBorderColor = values.map((_, pointIndex) => pointIndex === index ? '#dcfce7' : '#ffffff');
+        chart.data.datasets[0].pointBorderWidth = values.map((_, pointIndex) => pointIndex === index ? 3 : 2);
+        chart.$highlightIndex = index;
+        chart.$highlightValue = values[index];
+        chart.update();
+      };
+
+      if (!featureRmseChart) featureRmseChart = createMetricChart('feature-rmse-chart', rmseValues, bestRmseIndex, '#4f46e5', 'CV RMSE');
+      else updateChart(featureRmseChart, rmseValues, bestRmseIndex);
+      if (!featureR2Chart) featureR2Chart = createMetricChart('feature-r2-chart', r2Values, peakR2Index, '#0f766e', 'CV R²', true);
+      else updateChart(featureR2Chart, r2Values, peakR2Index);
+
+      document.getElementById('feature-rmse-method-label').textContent = method.title.replace(/ \(.+\)/, '');
+      document.getElementById('feature-rmse-subtitle').textContent = `Lower is better. Minimum at ${labels[bestRmseIndex]} (${rmseValues[bestRmseIndex].toFixed(3)}).`;
+      document.getElementById('feature-r2-peak-label').textContent = `Peak at ${labels[peakR2Index]}`;
+      document.getElementById('feature-r2-subtitle').textContent = `Higher is better. Peaks at ${labels[peakR2Index]} (${r2Values[peakR2Index].toFixed(4)}).`;
+    }
+
+    function applyFeatureSelection(methodId, count) {
+      const analysis = state.featureSelectionResults[methodId];
+      const choice = analysis?.bestByK.find(entry => entry.k === count);
+      if (!choice) return;
+      state.featureAlgorithm = methodId;
+      state.featureCount = choice.k;
+      state.selectedFeatureIndices = [...choice.indices];
+      const model = solveOLS(state.selectedFeatureIndices);
+      state.weights = [...model.weights];
+      state.b = model.b;
+      renderDynamicControls();
+      renderFeatureSelectionUI();
+      updateUI();
+    }
+
+    function compareFeatureMethods() {
+      const results = state.featureSelectionResults;
+      const comparable = FEATURE_METHODS.filter(method => results[method.id]);
+      const overallBest = comparable.reduce((best, method) => results[method.id].bestScore.rmse < results[best.id].bestScore.rmse ? method : best, comparable[0]);
+      const tableBody = document.getElementById('feature-method-comparison-body');
+      tableBody.innerHTML = comparable.map(method => {
+        const result = results[method.id];
+        return `<tr class="${method.id === overallBest.id ? 'bg-emerald-50/70' : 'bg-white'}"><td class="px-3 py-2 font-semibold">${method.title}${method.id === overallBest.id ? ' <span class="text-emerald-700">Best</span>' : ''}</td><td class="px-3 py-2">${result.ranking.map(index => escapeHTML(FEATURE_KEYS[index])).join(' → ')}</td><td class="px-3 py-2">${result.bestK}</td><td class="px-3 py-2">${result.bestIndices.map(index => escapeHTML(FEATURE_KEYS[index])).join(', ')}</td><td class="px-3 py-2 text-right font-mono">${result.bestScore.rmse.toFixed(3)}</td><td class="px-3 py-2 text-right font-mono">${result.bestScore.r2.toFixed(4)}</td></tr>`;
+      }).join('');
+      document.getElementById('feature-method-comparison').classList.remove('hidden');
+      applyFeatureSelection(overallBest.id, results[overallBest.id].bestK);
+    }
+
+    function renderDynamicControls() {
+      const activeFeatures = new Set(state.selectedFeatureIndices);
+      const colors = [
+        ['indigo', '#4f46e5'], ['amber', '#f59e0b'], ['emerald', '#10b981'],
+        ['rose', '#f43f5e'], ['cyan', '#06b6d4'], ['orange', '#f97316']
+      ];
+      const ySpan = Math.max(1, DATASET_STATS.maxTarget - DATASET_STATS.minTarget);
+      const selectedOptimal = solveOLS(state.selectedFeatureIndices);
+      const interceptPadding = Math.max(ySpan * 2, Math.abs(selectedOptimal.b) * 0.1, 1);
+      const interceptMin = Math.min(DATASET_STATS.minTarget, selectedOptimal.b) - interceptPadding;
+      const interceptMax = Math.max(DATASET_STATS.maxTarget, selectedOptimal.b) + interceptPadding;
+      document.getElementById('parameter-controls').innerHTML = FEATURE_KEYS.map((key, index) => {
+        const [color, thumb] = colors[index % colors.length];
+        const best = selectedOptimal.weights[index];
+        const active = activeFeatures.has(index);
+        const range = Math.max(Math.abs(best) * 3, 1);
+        const step = range < 1 ? 0.001 : 0.01;
+        return `<div class="${active ? '' : 'hidden'} space-y-1.5 p-3 rounded-xl bg-slate-50/80 border border-slate-200/80" style="--thumb-border:${thumb}">
+          <div class="flex items-center justify-between gap-2"><label for="slider-feature-${index}" class="text-xs font-bold text-slate-800 truncate">${escapeHTML(key)} 權重 (w${index + 1})</label><div class="flex items-center gap-1.5 shrink-0"><span class="text-[10px] text-slate-400 font-mono">OLS: ${best.toPrecision(4)}</span><button class="snap-btn text-[10px] text-${color}-600 hover:underline font-medium" data-feature-index="${index}" title="對齊至最佳解">對齊</button></div></div>
+          <div class="flex items-center gap-2"><input type="range" id="slider-feature-${index}" data-feature-index="${index}" min="${-range}" max="${range}" step="${step}" value="${best}" class="flex-grow" ${active ? '' : 'disabled'}><input type="number" id="input-feature-${index}" data-feature-index="${index}" step="${step}" value="${best}" class="w-24 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-1 focus:ring-indigo-500" ${active ? '' : 'disabled'}></div>
+          <div class="flex justify-between text-[10px] text-slate-400 font-mono"><span>${(-range).toPrecision(3)}</span><span class="text-${color}-600 font-semibold truncate px-2">${escapeHTML(key)}</span><span>${range.toPrecision(3)}</span></div>
+        </div>`;
+      }).join('') + `<div class="space-y-1.5 p-3 rounded-xl bg-slate-50/80 border border-slate-200/80" style="--thumb-border:#8b5cf6"><div class="flex items-center justify-between"><label for="slider-intercept" class="text-xs font-bold text-slate-800">截距 (b)</label><span class="text-[10px] text-slate-400 font-mono">OLS: ${GLOBAL_OPTIMAL.b.toPrecision(5)}</span></div><div class="flex items-center gap-2"><input type="range" id="slider-intercept" min="${interceptMin}" max="${interceptMax}" step="${Math.max(ySpan / 1000, 0.001)}" value="${GLOBAL_OPTIMAL.b}" class="flex-grow"><input type="number" id="input-intercept" step="any" value="${GLOBAL_OPTIMAL.b}" class="w-24 px-2 py-1 text-xs font-mono font-semibold bg-white border border-slate-300 rounded-md text-right"></div><div class="flex justify-between text-[10px] text-slate-400 font-mono"><span>${interceptMin.toPrecision(3)}</span><span>基準截距</span><span>${interceptMax.toPrecision(3)}</span></div></div>`;
+
+      const simulator = document.getElementById('simulator-controls');
+      simulator.innerHTML = state.selectedFeatureIndices.map(index => {
+        const key = FEATURE_KEYS[index];
+        const values = STARTUPS_DATA.map(row => Number(row[key]));
+        const min = Math.min(0, ...values);
+        const max = Math.max(1, ...values) * 1.2;
+        const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+        const step = Math.max((max - min) / 200, 0.01);
+        return `<div><div class="flex justify-between text-slate-600 mb-1"><label for="sim-feature-${index}">${escapeHTML(key)}:</label><span class="font-mono font-semibold" id="sim-feature-${index}-val"></span></div><input type="range" id="sim-feature-${index}" min="${min}" max="${max}" step="${step}" value="${mean}" class="w-full"></div>`;
+      }).join('') || '<p class="text-slate-500">此資料集沒有可用的數值特徵。</p>';
+
+      const projection = document.getElementById('select-feature-projection');
+      projection.innerHTML = FEATURE_KEYS.map((key, index) => `<option value="${index}">X 軸: ${escapeHTML(key)}</option>`).join('');
+      state.projectionFeature = Math.min(state.projectionFeature, Math.max(FEATURE_KEYS.length - 1, 0));
+
+      const categorySelect = document.getElementById('select-state-filter');
+      const selectedCategory = CATEGORY_KEYS[0];
+      categorySelect.innerHTML = '<option value="All">全部樣本</option>' + (selectedCategory ? [...new Set(STARTUPS_DATA.map(row => row[selectedCategory]))].map(value => `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`).join('') : '');
+      categorySelect.parentElement.classList.toggle('hidden', !selectedCategory);
+      state.stateFilter = 'All';
+      document.querySelector('#table-search').placeholder = selectedCategory ? `搜尋${selectedCategory}或序號...` : '搜尋欄位值或序號...';
+      document.querySelector('#table-sort option[value="rd-desc"]').textContent = FEATURE_KEYS[0] ? `${FEATURE_KEYS[0]} 由高到低` : '第一特徵由高到低';
+      document.querySelector('#table-sort option[value="actual-desc"]').textContent = `${TARGET_KEY} 由高到低`;
+      document.getElementById('dataset-summary-badge').textContent = `目前 Dataset (${DATASET_STATS.count} 筆資料)`;
+      document.getElementById('preset-all-label').textContent = `${FEATURE_KEYS.length} 個特徵 (${FEATURE_KEYS.join(' + ')})`;
+      document.getElementById('preset-two-label').textContent = `${Math.min(2, FEATURE_KEYS.length)} 個特徵 (${FEATURE_KEYS.slice(0, 2).join(' + ')})`;
+      document.getElementById('preset-one-label').textContent = FEATURE_KEYS.length ? `單變量 (${FEATURE_KEYS[0]})` : '沒有可用特徵';
+      document.getElementById('simulator-heading').textContent = `${TARGET_KEY} 即時試算器`;
+      document.getElementById('simulator-description').textContent = `調整特徵值，使用目前模型推估 ${TARGET_KEY}：`;
+      document.getElementById('sim-result-label').textContent = `預測 ${TARGET_KEY}`;
+      document.getElementById('table-heading').textContent = `${TARGET_KEY} 樣本殘差明細表`;
     }
 
     // 6. UI UPDATE DISPATCHER
     function updateUI() {
       const { predictions, mse, rmse, mae, r2 } = computePredictions();
 
-      // A. Update Dynamic Formula in Hero
-      document.getElementById('eq-w-rd').textContent = state.w_rd.toFixed(4);
-      
-      const adminVal = Math.abs(state.w_admin);
-      document.getElementById('eq-w-admin-sign').textContent = state.w_admin >= 0 ? '+' : '-';
-      document.getElementById('eq-w-admin').textContent = adminVal.toFixed(4);
-
-      const mktVal = Math.abs(state.w_mkt);
-      document.getElementById('eq-w-mkt-sign').textContent = state.w_mkt >= 0 ? '+' : '-';
-      document.getElementById('eq-w-mkt').textContent = mktVal.toFixed(4);
-
-      const bVal = Math.abs(state.b);
-      document.getElementById('eq-b-sign').textContent = state.b >= 0 ? '+' : '-';
-      document.getElementById('eq-b').textContent = bVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const terms = state.selectedFeatureIndices.map(index => {
+        const weight = state.weights[index];
+        return `${weight >= 0 ? '+' : '-'} ${Math.abs(weight).toPrecision(4)} × ${escapeHTML(FEATURE_KEYS[index])}`;
+      }).join(' ');
+      document.getElementById('equation-content').innerHTML = `<span class="text-pink-400 font-semibold">${escapeHTML(TARGET_KEY)} Ŷ</span> = ${terms} ${state.b >= 0 ? '+' : '-'} ${Math.abs(state.b).toLocaleString('en-US', { maximumFractionDigits: 3 })}`;
 
       // B. Update KPI Metrics Cards
       const r2Display = isNaN(r2) ? '0.0000' : (r2 < -1.0 ? r2.toFixed(2) : r2.toFixed(4));
@@ -1434,12 +1786,16 @@
       }
 
       // Delta comparison against optimal
-      const r2Diff = r2 - 0.9507;
+      const optimalMetrics = computePredictions(GLOBAL_OPTIMAL.weights, GLOBAL_OPTIMAL.b, FEATURE_KEYS.map((_, index) => index));
+      document.getElementById('optimal-reference').textContent = `R² = ${optimalMetrics.r2.toFixed(4)} | RMSE = $${Math.round(optimalMetrics.rmse).toLocaleString()}`;
+      const r2Diff = r2 - optimalMetrics.r2;
       document.getElementById('metric-r2-diff').textContent = `Δ: ${r2Diff >= 0 ? '+' : ''}${r2Diff.toFixed(4)}`;
 
       document.getElementById('metric-rmse').textContent = '$' + Math.round(rmse).toLocaleString();
       document.getElementById('metric-mae').textContent = '$' + Math.round(mae).toLocaleString();
       document.getElementById('metric-mse').textContent = mse > 1e6 ? mse.toExponential(2) : Math.round(mse).toLocaleString();
+      document.getElementById('metric-rmse-diff').textContent = `最佳: $${Math.round(optimalMetrics.rmse).toLocaleString()}`;
+      document.getElementById('metric-mae-diff').textContent = `最佳: $${Math.round(optimalMetrics.mae).toLocaleString()}`;
 
       // RMSE progress bar (scaled relative to baseline standard deviation)
       const rmsePct = Math.max(5, Math.min(100, 100 - (rmse / 40000) * 100));
@@ -1459,41 +1815,27 @@
     }
 
     function syncControlValues() {
-      const w_rd_slider = document.getElementById('slider-w-rd');
-      const w_rd_input = document.getElementById('input-w-rd');
-      w_rd_slider.value = state.w_rd;
-      w_rd_input.value = Number(state.w_rd.toFixed(4));
-
-      const w_admin_slider = document.getElementById('slider-w-admin');
-      const w_admin_input = document.getElementById('input-w-admin');
-      w_admin_slider.value = state.w_admin;
-      w_admin_input.value = Number(state.w_admin.toFixed(4));
-
-      const w_mkt_slider = document.getElementById('slider-w-mkt');
-      const w_mkt_input = document.getElementById('input-w-mkt');
-      w_mkt_slider.value = state.w_mkt;
-      w_mkt_input.value = Number(state.w_mkt.toFixed(4));
-
-      const b_slider = document.getElementById('slider-b');
-      const b_input = document.getElementById('input-b');
-      b_slider.value = state.b;
-      b_input.value = Number(state.b.toFixed(2));
+      state.weights.forEach((weight, index) => {
+        document.getElementById(`slider-feature-${index}`).value = weight;
+        document.getElementById(`input-feature-${index}`).value = Number(weight.toPrecision(6));
+      });
+      document.getElementById('slider-intercept').value = state.b;
+      document.getElementById('input-intercept').value = Number(state.b.toPrecision(7));
     }
 
     function updateSimulator() {
-      const simRd = parseFloat(document.getElementById('sim-rd').value);
-      const simAdmin = parseFloat(document.getElementById('sim-admin').value);
-      const simMkt = parseFloat(document.getElementById('sim-mkt').value);
-
-      document.getElementById('sim-rd-val').textContent = '$' + simRd.toLocaleString();
-      document.getElementById('sim-admin-val').textContent = '$' + simAdmin.toLocaleString();
-      document.getElementById('sim-mkt-val').textContent = '$' + simMkt.toLocaleString();
-
-      const profit = state.w_rd * simRd + state.w_admin * simAdmin + state.w_mkt * simMkt + state.b;
+      const profit = state.selectedFeatureIndices.reduce((sum, index) => {
+        const key = FEATURE_KEYS[index];
+        const input = document.getElementById(`sim-feature-${index}`);
+        const value = Number(input.value);
+        document.getElementById(`sim-feature-${index}-val`).textContent = value.toLocaleString();
+        return sum + state.weights[index] * value;
+      }, state.b);
       document.getElementById('sim-result-profit').textContent = '$' + Math.round(profit).toLocaleString();
 
       const badge = document.getElementById('sim-vs-avg-badge');
-      if (profit >= Y_MEAN) {
+      document.getElementById('sim-target-mean').textContent = '$' + Math.round(DATASET_STATS.mean).toLocaleString();
+      if (profit >= DATASET_STATS.mean) {
         badge.className = 'inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200';
         badge.innerHTML = '<i class="fa-solid fa-arrow-trend-up"></i> 高於平均';
       } else {
@@ -1505,23 +1847,26 @@
     // 7. CHART RENDERING ACROSS 3 TABS
     function updateChartData(predictions) {
       if (!chartInstance) return;
+      const categoryKey = CATEGORY_KEYS[0];
+      const maxTarget = Math.max(...predictions.map(item => item.actual), 1);
+      const minTarget = Math.min(...predictions.map(item => item.actual), 0);
 
       const filtered = predictions.filter(p => {
         if (state.stateFilter === 'All') return true;
-        return p.item.State === state.stateFilter;
+        return categoryKey && String(p.item[categoryKey]) === state.stateFilter;
       });
 
       if (state.chartTab === 'actual-vs-pred') {
         // TAB 1: ACTUAL VS PREDICTED
-        chartInstance.options.scales.x.title.text = '實際利潤 (Actual Profit $)';
-        chartInstance.options.scales.y.title.text = '模型預測利潤 (Predicted Profit $)';
-        chartInstance.options.scales.x.min = 0;
-        chartInstance.options.scales.x.max = 210000;
+        chartInstance.options.scales.x.title.text = `實際 ${TARGET_KEY}`;
+        chartInstance.options.scales.y.title.text = `預測 ${TARGET_KEY}`;
+        chartInstance.options.scales.x.min = Math.min(0, minTarget);
+        chartInstance.options.scales.x.max = maxTarget * 1.05;
         chartInstance.options.scales.y.min = undefined;
         chartInstance.options.scales.y.max = undefined;
 
         chartInstance.data.datasets[0].label = '完美預測對角線 (y = x)';
-        chartInstance.data.datasets[0].data = [{ x: 0, y: 0 }, { x: 210000, y: 210000 }];
+        chartInstance.data.datasets[0].data = [{ x: Math.min(0, minTarget), y: Math.min(0, minTarget) }, { x: maxTarget * 1.05, y: maxTarget * 1.05 }];
         chartInstance.data.datasets[0].hidden = false;
 
         const points = [];
@@ -1549,42 +1894,28 @@
         `;
 
       } else if (state.chartTab === 'feature-scatter') {
-        // TAB 2: FEATURE PROJECTION
-        const featKey = state.projectionFeature;
-        let featName = 'R&D Spend';
-        let featLabel = '研發支出 (R&D Spend $)';
-        let slope = state.w_rd;
+        const featureIndex = state.projectionFeature;
+        const featureName = FEATURE_KEYS[featureIndex];
+        if (!featureName) return;
+        const featureValues = STARTUPS_DATA.map(row => Number(row[featureName]));
+        const minX = Math.min(...featureValues, 0);
+        const maxX = Math.max(...featureValues, 1) * 1.05;
+        chartInstance.options.scales.x.title.text = featureName;
+        chartInstance.options.scales.y.title.text = TARGET_KEY;
+        chartInstance.options.scales.x.min = minX;
+        chartInstance.options.scales.x.max = maxX;
 
-        if (featKey === 'admin') {
-          featName = 'Administration';
-          featLabel = '管理支出 (Administration $)';
-          slope = state.w_admin;
-        } else if (featKey === 'mkt') {
-          featName = 'Marketing Spend';
-          featLabel = '行銷支出 (Marketing Spend $)';
-          slope = state.w_mkt;
-        }
-
-        chartInstance.options.scales.x.title.text = featLabel;
-        chartInstance.options.scales.y.title.text = '新創利潤 (Profit $)';
-        chartInstance.options.scales.x.min = 0;
-        chartInstance.options.scales.x.max = featKey === 'mkt' ? 500000 : 200000;
-
-        // Calculate mean of other 2 features
-        const otherFeaturesMeanContribution = STARTUPS_DATA.reduce((sum, row) => {
-          let other = state.b;
-          if (featKey !== 'rd') other += state.w_rd * row['R&D Spend'];
-          if (featKey !== 'admin') other += state.w_admin * row['Administration'];
-          if (featKey !== 'mkt') other += state.w_mkt * row['Marketing Spend'];
-          return sum + other;
-        }, 0) / N_SAMPLES;
-
-        const max_x = chartInstance.options.scales.x.max;
-        const trendStart = otherFeaturesMeanContribution;
-        const trendEnd = slope * max_x + otherFeaturesMeanContribution;
+        const otherFeaturesMeanContribution = state.b + FEATURE_KEYS.reduce((sum, key, index) => {
+          if (index === featureIndex) return sum;
+          const mean = STARTUPS_DATA.reduce((total, row) => total + Number(row[key]), 0) / DATASET_STATS.count;
+          return sum + state.weights[index] * mean;
+        }, 0);
+        const slope = state.weights[featureIndex];
+        const trendStart = slope * minX + otherFeaturesMeanContribution;
+        const trendEnd = slope * maxX + otherFeaturesMeanContribution;
 
         chartInstance.data.datasets[0].label = `當前迴歸斜率線 (w = ${slope.toFixed(4)})`;
-        chartInstance.data.datasets[0].data = [{ x: 0, y: trendStart }, { x: max_x, y: trendEnd }];
+        chartInstance.data.datasets[0].data = [{ x: minX, y: trendStart }, { x: maxX, y: trendEnd }];
         chartInstance.data.datasets[0].hidden = false;
 
         const points = [];
@@ -1592,34 +1923,35 @@
 
         filtered.forEach(p => {
           points.push({
-            x: p.item[featName],
+            x: Number(p.item[featureName]),
             y: p.actual,
             meta: p.index
           });
-          colors.push(featKey === 'rd' ? 'rgba(79, 70, 229, 0.85)' : (featKey === 'admin' ? 'rgba(245, 158, 11, 0.85)' : 'rgba(16, 185, 129, 0.85)'));
+          colors.push(['rgba(79, 70, 229, 0.85)', 'rgba(245, 158, 11, 0.85)', 'rgba(16, 185, 129, 0.85)'][featureIndex % 3]);
         });
 
-        chartInstance.data.datasets[1].label = `實際樣本分佈 (${featName})`;
+        chartInstance.data.datasets[1].label = `實際樣本分佈 (${featureName})`;
         chartInstance.data.datasets[1].data = points;
         chartInstance.data.datasets[1].backgroundColor = colors;
         chartInstance.data.datasets[1].pointRadius = 6;
 
         document.getElementById('chart-hint-text').innerHTML = `
           <span class="inline-block w-2 h-2 rounded-full bg-indigo-500"></span>
-          <span><strong>特徵邊際效應斜率</strong>：拖曳滑桿時，虛線斜率將實時旋轉，呈現該特徵對利潤的邊際貢獻。</span>
+          <span><strong>特徵邊際效應斜率</strong>：拖曳滑桿時，虛線斜率將實時旋轉，呈現該特徵對目標值的邊際貢獻。</span>
         `;
 
       } else if (state.chartTab === 'residuals') {
         // TAB 3: RESIDUALS VS PREDICTED
-        chartInstance.options.scales.x.title.text = '模型預測利潤 (Predicted Profit $)';
-        chartInstance.options.scales.y.title.text = '殘差 Residual (Actual - Predicted $)';
-        chartInstance.options.scales.x.min = 0;
-        chartInstance.options.scales.x.max = 210000;
-        chartInstance.options.scales.y.min = -40000;
-        chartInstance.options.scales.y.max = 40000;
+        const residualLimit = Math.max(...predictions.map(item => Math.abs(item.residual)), 1) * 1.1;
+        chartInstance.options.scales.x.title.text = `預測 ${TARGET_KEY}`;
+        chartInstance.options.scales.y.title.text = '殘差 (實際 - 預測)';
+        chartInstance.options.scales.x.min = Math.min(0, minTarget);
+        chartInstance.options.scales.x.max = Math.max(...predictions.map(item => item.predicted), 1) * 1.05;
+        chartInstance.options.scales.y.min = -residualLimit;
+        chartInstance.options.scales.y.max = residualLimit;
 
         chartInstance.data.datasets[0].label = '零殘差基準線 (Residual = 0)';
-        chartInstance.data.datasets[0].data = [{ x: 0, y: 0 }, { x: 210000, y: 0 }];
+        chartInstance.data.datasets[0].data = [{ x: chartInstance.options.scales.x.min, y: 0 }, { x: chartInstance.options.scales.x.max, y: 0 }];
         chartInstance.data.datasets[0].hidden = false;
 
         const points = [];
@@ -1651,20 +1983,20 @@
     // 8. TABLE POPULATION
     function updateTable(predictions) {
       const tbody = document.getElementById('table-body');
+      const categoryKey = CATEGORY_KEYS[0];
+      const headerRow = document.getElementById('table-header-row');
+      headerRow.innerHTML = ['#', ...(categoryKey ? [categoryKey] : []), ...FEATURE_KEYS, TARGET_KEY, '預測值', '殘差', '誤差率'].map((label, index) => `<th class="py-2.5 px-3 ${index >= 2 + FEATURE_KEYS.length ? 'text-right' : ''}">${escapeHTML(label)}</th>`).join('');
       let rows = [...predictions];
 
       // Filter by search
       if (state.tableSearch.trim() !== '') {
         const q = state.tableSearch.toLowerCase();
-        rows = rows.filter(r => 
-          r.item.State.toLowerCase().includes(q) ||
-          (r.index + 1).toString().includes(q)
-        );
+        rows = rows.filter(r => Object.values(r.item).some(value => String(value).toLowerCase().includes(q)) || (r.index + 1).toString().includes(q));
       }
 
       // Filter by state filter
       if (state.stateFilter !== 'All') {
-        rows = rows.filter(r => r.item.State === state.stateFilter);
+        rows = rows.filter(r => categoryKey && String(r.item[categoryKey]) === state.stateFilter);
       }
 
       // Sort
@@ -1675,7 +2007,7 @@
       } else if (state.tableSort === 'error-desc') {
         rows.sort((a, b) => b.absError - a.absError);
       } else if (state.tableSort === 'rd-desc') {
-        rows.sort((a, b) => b.item['R&D Spend'] - a.item['R&D Spend']);
+        if (FEATURE_KEYS[0]) rows.sort((a, b) => Number(b.item[FEATURE_KEYS[0]]) - Number(a.item[FEATURE_KEYS[0]]));
       }
 
       document.getElementById('table-row-count').textContent = rows.length;
@@ -1693,12 +2025,10 @@
               #${r.index + 1}
               ${isOutlier ? '<span class="ml-1 text-[9px] bg-rose-200 text-rose-800 px-1 py-0.5 rounded font-sans font-bold">異常</span>' : ''}
             </td>
-            <td class="py-2 px-3 font-sans font-medium text-slate-800">${r.item.State}</td>
-            <td class="py-2 px-3 text-slate-600">$${Math.round(r.item['R&D Spend']).toLocaleString()}</td>
-            <td class="py-2 px-3 text-slate-600">$${Math.round(r.item['Administration']).toLocaleString()}</td>
-            <td class="py-2 px-3 text-slate-600">$${Math.round(r.item['Marketing Spend']).toLocaleString()}</td>
-            <td class="py-2 px-3 text-right font-bold text-slate-900">$${Math.round(r.actual).toLocaleString()}</td>
-            <td class="py-2 px-3 text-right font-semibold text-indigo-700">$${Math.round(r.predicted).toLocaleString()}</td>
+            ${categoryKey ? `<td class="py-2 px-3 font-sans font-medium text-slate-800">${escapeHTML(r.item[categoryKey])}</td>` : ''}
+            ${FEATURE_KEYS.map(key => `<td class="py-2 px-3 text-slate-600">${Number(r.item[key]).toLocaleString()}</td>`).join('')}
+            <td class="py-2 px-3 text-right font-bold text-slate-900">${Math.round(r.actual).toLocaleString()}</td>
+            <td class="py-2 px-3 text-right font-semibold text-indigo-700">${Math.round(r.predicted).toLocaleString()}</td>
             <td class="py-2 px-3 text-right ${r.residual >= 0 ? 'text-blue-600' : 'text-rose-600'} font-medium">
               ${r.residual >= 0 ? '+' : ''}${Math.round(r.residual).toLocaleString()}
             </td>
@@ -1712,278 +2042,328 @@
       }).join('');
     }
 
-    // 9. ANIMATED SMOOTH INTERPOLATION TO OPTIMAL
-    let animationFrameId = null;
-    function animateToWeights(targetW_rd, targetW_admin, targetW_mkt, targetB, duration = 800) {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-
-      const startW_rd = state.w_rd;
-      const startW_admin = state.w_admin;
-      const startW_mkt = state.w_mkt;
-      const startB = state.b;
-
-      const startTime = performance.now();
-
-      function step(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / duration);
-        // easeOutCubic curve
-        const ease = 1 - Math.pow(1 - progress, 3);
-
-        state.w_rd = startW_rd + (targetW_rd - startW_rd) * ease;
-        state.w_admin = startW_admin + (targetW_admin - startW_admin) * ease;
-        state.w_mkt = startW_mkt + (targetW_mkt - startW_mkt) * ease;
-        state.b = startB + (targetB - startB) * ease;
-
-        updateUI();
-
-        if (progress < 1) {
-          animationFrameId = requestAnimationFrame(step);
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let field = '';
+      let quoted = false;
+      for (let index = 0; index < text.length; index++) {
+        const char = text[index];
+        if (char === '"' && quoted && text[index + 1] === '"') {
+          field += '"';
+          index++;
+        } else if (char === '"') {
+          quoted = !quoted;
+        } else if (char === ',' && !quoted) {
+          row.push(field.trim());
+          field = '';
+        } else if ((char === '\n' || char === '\r') && !quoted) {
+          if (char === '\r' && text[index + 1] === '\n') index++;
+          row.push(field.trim());
+          if (row.some(value => value !== '')) rows.push(row);
+          row = [];
+          field = '';
         } else {
-          // Check if confetti should trigger
-          if (typeof confetti === 'function' && targetW_rd === GLOBAL_OPTIMAL.w_rd) {
-            confetti({
-              particleCount: 80,
-              spread: 60,
-              origin: { y: 0.7 }
-            });
-          }
+          field += char;
         }
       }
+      if (quoted) throw new Error('CSV 中有未配對的雙引號。');
+      row.push(field.trim());
+      if (row.some(value => value !== '')) rows.push(row);
+      if (rows.length < 2) throw new Error('請提供欄名列與至少一筆資料。');
 
+      const headers = rows[0].map((header, index) => (index === 0 ? header.replace(/^\uFEFF/, '') : header).trim());
+      if (headers.some(header => !header)) throw new Error('欄名不可空白。');
+      if (new Set(headers).size !== headers.length) throw new Error('欄名不可重複。');
+      if (rows.slice(1).some(values => values.length !== headers.length)) throw new Error('每筆資料的欄位數必須一致。');
+      const targetKey = headers[headers.length - 1];
+      if (!rows.slice(1).every(values => isNumericValue(values[headers.length - 1]))) throw new Error(`最後一欄「${targetKey}」必須全部是數值。`);
+
+      const columns = headers.map((header, index) => ({ header, index }));
+      const numericColumns = columns.filter(column => column.index !== headers.length - 1 && rows.slice(1).every(values => isNumericValue(values[column.index])));
+      if (!numericColumns.length) throw new Error('至少需要一個完整的數值特徵欄位。');
+      const data = rows.slice(1).map(values => Object.fromEntries(headers.map((header, index) => {
+        const numeric = index === headers.length - 1 || numericColumns.some(column => column.index === index);
+        return [header, numeric ? Number(values[index]) : values[index]];
+      })));
+      return { data, targetKey };
+    }
+
+    async function fetchDatasetCSV(datasetKey) {
+      const response = await fetch(encodeURI(DATASET_PRESETS[datasetKey]));
+      if (!response.ok) throw new Error(`無法讀取 ${DATASET_PRESETS[datasetKey]} (${response.status})`);
+      const source = await response.text();
+      if (datasetKey === 'startups') return source;
+
+      const { data } = parseCSV(source);
+      const sourceKeys = Object.keys(data[0]);
+      const columns = [
+        ['house age', sourceKeys.find(key => key.toLowerCase().includes('house age'))],
+        ['distance to the nearest MRT station', sourceKeys.find(key => key.toLowerCase().includes('distance to the nearest mrt'))],
+        ['number of convenience stores', sourceKeys.find(key => key.toLowerCase().includes('number of convenience stores'))],
+        ['latitude', sourceKeys.find(key => key.toLowerCase().includes('latitude'))],
+        ['longitude', sourceKeys.find(key => key.toLowerCase().includes('longitude'))],
+        ['house price of unit area', sourceKeys.find(key => key.toLowerCase().includes('house price of unit area'))]
+      ];
+      if (columns.some(([, sourceKey]) => !sourceKey)) throw new Error('Real estate.csv 欄位與預期格式不符。');
+      return [columns.map(([name]) => name).join(','), ...data.map(row => columns.map(([, sourceKey]) => row[sourceKey]).join(','))].join('\n');
+    }
+
+    let animationFrameId = null;
+    function animateToWeights(target, duration = 700) {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      const startWeights = [...state.weights];
+      const startIntercept = state.b;
+      const startTime = performance.now();
+      function step(now) {
+        const progress = Math.min(1, (now - startTime) / duration);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        state.weights = startWeights.map((weight, index) => weight + (target.weights[index] - weight) * ease);
+        state.b = startIntercept + (target.b - startIntercept) * ease;
+        updateUI();
+        if (progress < 1) animationFrameId = requestAnimationFrame(step);
+        else if (typeof confetti === 'function') confetti({ particleCount: 60, spread: 55, origin: { y: 0.7 } });
+      }
       animationFrameId = requestAnimationFrame(step);
     }
 
-    // 10. ATTACH EVENT LISTENERS
     document.addEventListener('DOMContentLoaded', () => {
       initChart();
+      state.featureSelectionResults = analyzeFeatureMethods();
+      state.featureCount = state.featureSelectionResults.lasso.bestK;
+      state.selectedFeatureIndices = [...state.featureSelectionResults.lasso.bestIndices];
+      const initialSelectedModel = solveOLS(state.selectedFeatureIndices);
+      state.weights = [...initialSelectedModel.weights];
+      state.b = initialSelectedModel.b;
+      renderFeatureSelectionUI();
+      renderDynamicControls();
       updateUI();
 
-      // Sliders & Number inputs sync
-      const controls = [
-        { key: 'w_rd', slider: 'slider-w-rd', input: 'input-w-rd' },
-        { key: 'w_admin', slider: 'slider-w-admin', input: 'input-w-admin' },
-        { key: 'w_mkt', slider: 'slider-w-mkt', input: 'input-w-mkt' },
-        { key: 'b', slider: 'slider-b', input: 'input-b' }
-      ];
-
-      controls.forEach(c => {
-        const slider = document.getElementById(c.slider);
-        const input = document.getElementById(c.input);
-
-        slider.addEventListener('input', (e) => {
-          state[c.key] = parseFloat(e.target.value);
-          updateUI();
-        });
-
-        input.addEventListener('change', (e) => {
-          let val = parseFloat(e.target.value);
-          if (isNaN(val)) val = 0;
-          state[c.key] = val;
-          updateUI();
-        });
+      document.getElementById('feature-algorithm-cards').addEventListener('click', event => {
+        const button = event.target.closest('[data-feature-method]');
+        if (!button || button.disabled) return;
+        const analysis = state.featureSelectionResults[button.dataset.featureMethod];
+        applyFeatureSelection(button.dataset.featureMethod, analysis.bestK);
       });
-
-      // Simulator inputs
-      ['sim-rd', 'sim-admin', 'sim-mkt'].forEach(id => {
-        document.getElementById(id).addEventListener('input', updateSimulator);
+      document.getElementById('feature-count-buttons').addEventListener('click', event => {
+        const button = event.target.closest('[data-feature-count]');
+        if (button) applyFeatureSelection(state.featureAlgorithm, Number(button.dataset.featureCount));
       });
+      document.getElementById('btn-compare-feature-methods').addEventListener('click', compareFeatureMethods);
 
-      // Optimal button (Top & Quick)
-      function triggerOptimal(animate = true) {
-        let optimal;
-        if (state.activePreset === '2feat') {
-          optimal = solveOLS(['rd', 'mkt']);
-        } else if (state.activePreset === 'rd-only') {
-          optimal = solveOLS(['rd']);
-        } else {
-          optimal = GLOBAL_OPTIMAL;
+      const status = document.getElementById('dataset-status');
+      document.getElementById('btn-load-dataset').addEventListener('click', () => {
+        const previous = {
+          data: STARTUPS_DATA,
+          target: TARGET_KEY,
+          features: FEATURE_KEYS,
+          categories: CATEGORY_KEYS,
+          stats: DATASET_STATS,
+          optimal: GLOBAL_OPTIMAL,
+          featureSelectionResults: state.featureSelectionResults,
+          featureScoreCache: state.featureScoreCache,
+          featureAlgorithm: state.featureAlgorithm,
+          featureCount: state.featureCount,
+          selectedFeatureIndices: state.selectedFeatureIndices
+        };
+        try {
+          const parsed = parseCSV(document.getElementById('dataset-csv-input').value);
+          STARTUPS_DATA = parsed.data;
+          TARGET_KEY = parsed.targetKey;
+          refreshDatasetMetadata();
+          const optimal = solveOLS();
+          if (!optimal) throw new Error('資料矩陣無法求解，請檢查數值欄位。');
+          GLOBAL_OPTIMAL = optimal;
+          state.featureAlgorithm = 'lasso';
+          state.featureScoreCache = new Map();
+          state.featureSelectionResults = analyzeFeatureMethods();
+          state.featureCount = state.featureSelectionResults.lasso.bestK;
+          state.selectedFeatureIndices = [...state.featureSelectionResults.lasso.bestIndices];
+          const selectedModel = solveOLS(state.selectedFeatureIndices);
+          state.weights = [...selectedModel.weights];
+          state.b = selectedModel.b;
+          state.projectionFeature = 0;
+          state.stateFilter = 'All';
+          state.tableSearch = '';
+          document.getElementById('table-search').value = '';
+          document.getElementById('feature-method-comparison').classList.add('hidden');
+          renderFeatureSelectionUI();
+          renderDynamicControls();
+          updateUI();
+          status.className = 'text-xs text-emerald-700';
+          status.textContent = `已載入 ${DATASET_STATS.count} 筆資料、${FEATURE_KEYS.length} 個數值特徵；目標欄位：${TARGET_KEY}。`;
+        } catch (error) {
+          STARTUPS_DATA = previous.data;
+          TARGET_KEY = previous.target;
+          FEATURE_KEYS = previous.features;
+          CATEGORY_KEYS = previous.categories;
+          DATASET_STATS = previous.stats;
+          GLOBAL_OPTIMAL = previous.optimal;
+          state.featureSelectionResults = previous.featureSelectionResults;
+          state.featureScoreCache = previous.featureScoreCache;
+          state.featureAlgorithm = previous.featureAlgorithm;
+          state.featureCount = previous.featureCount;
+          state.selectedFeatureIndices = previous.selectedFeatureIndices;
+          renderFeatureSelectionUI();
+          renderDynamicControls();
+          updateUI();
+          status.className = 'text-xs text-rose-700';
+          status.textContent = `載入失敗：${error.message}`;
         }
+      });
+      const datasetSelector = document.getElementById('dataset-selector');
+      datasetSelector.addEventListener('change', async event => {
+        const datasetKey = event.target.value;
+        datasetSelector.disabled = true;
+        status.className = 'text-xs text-slate-500';
+        status.textContent = `正在讀取 ${DATASET_PRESETS[datasetKey]}...`;
+        try {
+          const csv = await fetchDatasetCSV(datasetKey);
+          if (datasetSelector.value !== datasetKey) return;
+          document.getElementById('dataset-csv-input').value = csv;
+          document.getElementById('btn-load-dataset').click();
+        } catch (error) {
+          status.className = 'text-xs text-rose-700';
+          status.textContent = `讀取失敗：${error.message}。請透過本機伺服器或網站網址開啟頁面。`;
+        } finally {
+          datasetSelector.disabled = false;
+        }
+      });
 
-        if (animate) {
-          animateToWeights(optimal.w_rd, optimal.w_admin, optimal.w_mkt, optimal.b, 750);
-        } else {
-          state.w_rd = optimal.w_rd;
-          state.w_admin = optimal.w_admin;
-          state.w_mkt = optimal.w_mkt;
+      fetchDatasetCSV('startups').then(csv => {
+        if (datasetSelector.value === 'startups') document.getElementById('dataset-csv-input').value = csv;
+      }).catch(error => {
+        status.className = 'text-xs text-amber-700';
+        status.textContent = `無法預載 50_Startups.csv：${error.message}。切換資料集時請使用本機伺服器。`;
+      });
+
+      const parameterControls = document.getElementById('parameter-controls');
+      parameterControls.addEventListener('input', event => {
+        const index = Number(event.target.dataset.featureIndex);
+        if (Number.isInteger(index)) state.weights[index] = Number(event.target.value);
+        else if (event.target.id === 'slider-intercept') state.b = Number(event.target.value);
+        updateUI();
+      });
+      parameterControls.addEventListener('change', event => {
+        const index = Number(event.target.dataset.featureIndex);
+        if (Number.isInteger(index)) state.weights[index] = Number(event.target.value) || 0;
+        else if (event.target.id === 'input-intercept') state.b = Number(event.target.value) || 0;
+        updateUI();
+      });
+      parameterControls.addEventListener('click', event => {
+        const button = event.target.closest('.snap-btn');
+        if (!button) return;
+        const index = Number(button.dataset.featureIndex);
+        state.weights[index] = solveOLS(state.selectedFeatureIndices).weights[index];
+        updateUI();
+      });
+      document.getElementById('simulator-controls').addEventListener('input', updateSimulator);
+
+      function applyOptimal(animated = true, featureIndices = state.selectedFeatureIndices) {
+        const optimal = featureIndices.length === FEATURE_KEYS.length ? GLOBAL_OPTIMAL : solveOLS(featureIndices);
+        if (!optimal) return;
+        if (animated) animateToWeights(optimal);
+        else {
+          state.weights = [...optimal.weights];
           state.b = optimal.b;
           updateUI();
         }
       }
-
-      document.getElementById('btn-apply-optimal').addEventListener('click', () => triggerOptimal(true));
-      document.getElementById('btn-quick-optimal').addEventListener('click', () => triggerOptimal(true));
-
-      // Reset button
-      document.getElementById('btn-reset').addEventListener('click', () => {
-        animateToWeights(GLOBAL_OPTIMAL.w_rd, GLOBAL_OPTIMAL.w_admin, GLOBAL_OPTIMAL.w_mkt, GLOBAL_OPTIMAL.b, 500);
-      });
-
-      // Animation Fit (starts from 0 or perturbed and converges)
+      document.getElementById('btn-apply-optimal').addEventListener('click', () => applyOptimal());
+      document.getElementById('btn-quick-optimal').addEventListener('click', () => applyOptimal());
+      document.getElementById('btn-reset').addEventListener('click', () => applyOptimal(true));
       document.getElementById('btn-animate-fit').addEventListener('click', () => {
-        state.w_rd = 0.2;
-        state.w_admin = 0.4;
-        state.w_mkt = -0.1;
-        state.b = 10000;
+        state.weights = state.weights.map(() => 0.2);
+        state.b = DATASET_STATS.mean * 0.1;
         updateUI();
-        setTimeout(() => {
-          triggerOptimal(true);
-        }, 300);
+        setTimeout(() => applyOptimal(), 300);
       });
 
-      // Preset buttons
-      const presetBtns = {
-        'preset-all': 'all',
-        'preset-2feat': '2feat',
-        'preset-rd-only': 'rd-only',
-        'preset-zero': 'zero'
-      };
-
-      Object.entries(presetBtns).forEach(([btnId, presetKey]) => {
-        document.getElementById(btnId).addEventListener('click', () => {
-          document.querySelectorAll('.preset-btn').forEach(b => {
-            b.className = 'preset-btn py-2 px-2.5 rounded-lg border text-left font-medium transition flex flex-col justify-between border-slate-200 bg-white text-slate-700 hover:border-slate-300';
-            b.querySelector('.rounded-full').className = 'w-2 h-2 rounded-full bg-slate-300';
-          });
-
-          const activeBtn = document.getElementById(btnId);
-          activeBtn.className = 'preset-btn active py-2 px-2.5 rounded-lg border text-left font-medium transition flex flex-col justify-between border-indigo-600 bg-indigo-50 text-indigo-900 shadow-sm';
-          activeBtn.querySelector('.rounded-full').className = 'w-2 h-2 rounded-full bg-indigo-600';
-
-          state.activePreset = presetKey;
-
-          if (presetKey === 'all') {
-            const opt = solveOLS(['rd', 'admin', 'mkt']);
-            animateToWeights(opt.w_rd, opt.w_admin, opt.w_mkt, opt.b, 600);
-          } else if (presetKey === '2feat') {
-            const opt = solveOLS(['rd', 'mkt']);
-            animateToWeights(opt.w_rd, 0, opt.w_mkt, opt.b, 600);
-          } else if (presetKey === 'rd-only') {
-            const opt = solveOLS(['rd']);
-            animateToWeights(opt.w_rd, 0, 0, opt.b, 600);
-          } else if (presetKey === 'zero') {
-            animateToWeights(0, 0, 0, 0, 500);
-          }
+      const presets = { 'preset-all': 'all', 'preset-2feat': 'two', 'preset-rd-only': 'one', 'preset-zero': 'zero' };
+      Object.entries(presets).forEach(([buttonId, preset]) => document.getElementById(buttonId).addEventListener('click', () => {
+        document.querySelectorAll('.preset-btn').forEach(button => {
+          button.className = 'preset-btn py-2 px-2.5 rounded-lg border text-left font-medium transition flex flex-col justify-between border-slate-200 bg-white text-slate-700 hover:border-slate-300';
+          button.querySelector('.rounded-full').className = 'w-2 h-2 rounded-full bg-slate-300';
         });
-      });
+        const active = document.getElementById(buttonId);
+        active.className = 'preset-btn active py-2 px-2.5 rounded-lg border text-left font-medium transition flex flex-col justify-between border-indigo-600 bg-indigo-50 text-indigo-900 shadow-sm';
+        active.querySelector('.rounded-full').className = 'w-2 h-2 rounded-full bg-indigo-600';
+        state.activePreset = preset;
+        const count = preset === 'two' ? Math.min(2, FEATURE_KEYS.length) : preset === 'one' ? 1 : state.featureCount;
+        applyFeatureSelection(state.featureAlgorithm, preset === 'all' ? FEATURE_KEYS.length : count);
+        if (preset === 'zero') {
+          state.weights = state.weights.map(() => 0);
+          state.b = 0;
+          updateUI();
+        }
+      }));
 
-      // Snap individual parameter to optimal
-      document.querySelectorAll('.snap-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const target = e.target.getAttribute('data-target');
-          if (target && GLOBAL_OPTIMAL[target] !== undefined) {
-            state[target] = GLOBAL_OPTIMAL[target];
-            updateUI();
-          }
-        });
-      });
-
-      // Nudge buttons
       document.getElementById('btn-nudge-up').addEventListener('click', () => {
-        state.w_rd *= 1.02;
-        state.w_admin *= 1.02;
-        state.w_mkt *= 1.02;
-        state.b *= 1.02;
+        state.weights = state.weights.map(weight => weight * 1.01);
+        state.b *= 1.01;
         updateUI();
       });
       document.getElementById('btn-nudge-down').addEventListener('click', () => {
-        state.w_rd *= 0.98;
-        state.w_admin *= 0.98;
-        state.w_mkt *= 0.98;
-        state.b *= 0.98;
+        state.weights = state.weights.map(weight => weight * 0.99);
+        state.b *= 0.99;
         updateUI();
       });
       document.getElementById('btn-randomize').addEventListener('click', () => {
-        state.w_rd = parseFloat((Math.random() * 1.5).toFixed(3));
-        state.w_admin = parseFloat(((Math.random() - 0.5) * 0.4).toFixed(3));
-        state.w_mkt = parseFloat((Math.random() * 0.2).toFixed(3));
-        state.b = Math.round(Math.random() * 80000);
+        state.weights = GLOBAL_OPTIMAL.weights.map(weight => (Math.random() * 2 - 1) * Math.max(Math.abs(weight) * 2, 0.01));
+        state.b = (Math.random() * 2 - 1) * Math.max(Math.abs(GLOBAL_OPTIMAL.b), 1);
         updateUI();
       });
 
-      // Chart Tabs
       const tabs = [
         { id: 'tab-actual-vs-pred', key: 'actual-vs-pred' },
         { id: 'tab-feature-scatter', key: 'feature-scatter' },
         { id: 'tab-residuals', key: 'residuals' }
       ];
-
-      tabs.forEach(t => {
-        document.getElementById(t.id).addEventListener('click', () => {
-          tabs.forEach(item => {
-            const el = document.getElementById(item.id);
-            el.className = 'chart-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition';
-          });
-          document.getElementById(t.id).className = 'chart-tab px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm transition';
-          
-          state.chartTab = t.key;
-          const featWrapper = document.getElementById('feature-select-wrapper');
-          if (t.key === 'feature-scatter') {
-            featWrapper.classList.remove('hidden');
-          } else {
-            featWrapper.classList.add('hidden');
-          }
-
-          const { predictions } = computePredictions();
-          updateChartData(predictions);
-        });
+      tabs.forEach(tab => document.getElementById(tab.id).addEventListener('click', () => {
+        tabs.forEach(item => document.getElementById(item.id).className = 'chart-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition');
+        document.getElementById(tab.id).className = 'chart-tab px-3 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm transition';
+        state.chartTab = tab.key;
+        document.getElementById('feature-select-wrapper').classList.toggle('hidden', tab.key !== 'feature-scatter' || FEATURE_KEYS.length === 0);
+        updateChartData(computePredictions().predictions);
+      }));
+      document.getElementById('select-feature-projection').addEventListener('change', event => {
+        state.projectionFeature = Number(event.target.value);
+        updateChartData(computePredictions().predictions);
       });
-
-      // Feature projection select
-      document.getElementById('select-feature-projection').addEventListener('change', (e) => {
-        state.projectionFeature = e.target.value;
-        const { predictions } = computePredictions();
-        updateChartData(predictions);
-      });
-
-      // State Filter select
-      document.getElementById('select-state-filter').addEventListener('change', (e) => {
-        state.stateFilter = e.target.value;
-        const { predictions } = computePredictions();
+      document.getElementById('select-state-filter').addEventListener('change', event => {
+        state.stateFilter = event.target.value;
+        const predictions = computePredictions().predictions;
         updateChartData(predictions);
         updateTable(predictions);
       });
-
-      // Table Search & Sort
-      document.getElementById('table-search').addEventListener('input', (e) => {
-        state.tableSearch = e.target.value;
-        const { predictions } = computePredictions();
-        updateTable(predictions);
+      document.getElementById('table-search').addEventListener('input', event => {
+        state.tableSearch = event.target.value;
+        updateTable(computePredictions().predictions);
       });
-
-      document.getElementById('table-sort').addEventListener('change', (e) => {
-        state.tableSort = e.target.value;
-        const { predictions } = computePredictions();
-        updateTable(predictions);
+      document.getElementById('table-sort').addEventListener('change', event => {
+        state.tableSort = event.target.value;
+        updateTable(computePredictions().predictions);
       });
-
-      // Export CSV
       document.getElementById('btn-export-csv').addEventListener('click', () => {
-        const { predictions } = computePredictions();
-        let csv = 'Startup_ID,State,R&D_Spend,Administration,Marketing_Spend,Actual_Profit,Predicted_Profit,Residual,Absolute_Error_Pct\n';
-        predictions.forEach(p => {
-          csv += `${p.index + 1},"${p.item.State}",${p.item['R&D Spend']},${p.item.Administration},${p.item['Marketing Spend']},${p.actual},${p.predicted.toFixed(2)},${p.residual.toFixed(2)},${p.pctError.toFixed(2)}%\n`;
-        });
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const predictions = computePredictions().predictions;
+        const quote = value => `"${String(value).replace(/"/g, '""')}"`;
+        const headers = ['Sample', ...Object.keys(STARTUPS_DATA[0]), 'Predicted', 'Residual', 'Absolute_Error_Pct'];
+        const lines = [headers.map(quote).join(',')];
+        predictions.forEach(item => lines.push([item.index + 1, ...Object.keys(item.item).map(key => item.item[key]), item.predicted, item.residual, item.pctError].map(quote).join(',')));
+        const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `50_startups_regression_predictions_${Date.now()}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `regression_predictions_${Date.now()}.csv`;
+        link.click();
         URL.revokeObjectURL(url);
       });
 
-      // Theory Modal
       const modal = document.getElementById('theory-modal');
       document.getElementById('btn-theory-modal').addEventListener('click', () => modal.classList.remove('hidden'));
       document.getElementById('btn-close-modal').addEventListener('click', () => modal.classList.add('hidden'));
       document.getElementById('btn-modal-ok').addEventListener('click', () => modal.classList.add('hidden'));
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.classList.add('hidden');
-      });
+      modal.addEventListener('click', event => { if (event.target === modal) modal.classList.add('hidden'); });
     });
   </script>
 </body>
